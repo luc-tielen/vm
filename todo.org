@@ -1,0 +1,34 @@
+* Bytecode Interpreter Project
+** Overview
+I'm currently working on a stack-based bytecode interpreter for a statically typed functional language in C.
+I hope to work on this long enough to get to implementing closures, garbage collection, exceptions and concurrency.
+I'll be taking cues from OCaml and Chicken Scheme, along with other resources, combined with some experimentation.
+I don't exactly know what I'm doing, but I have a rough idea. So please be patient with me!
+** Tasks
+*** Decide on bytecode scheme
+- load int, add, push, pop, print, halt
+*** Add demo programs
+| Program                         | Expected result |
+|---------------------------------+-----------------|
+| 1 print halt;                   | print 1         |
+| 1 2 add 3 4 add add print halt; | print 10        |
+*** Implement interpreter for demo programs
+Should have a stack, stack pointer, instruction pointer
+
+- Start with: just load int, print and halt
+- Later add: push, pop, add
+*** Write tests for the above in Haskell
+*** Add strings
+- Heap allocated strings, int-to-str, concat, change print to only print strings
+*** Add Automatic Memory Management for Heap Allocated Objects
+*** Add bytearrays
+*** Add Jumps and Conditional Jumps
+*** Add Functions and Closures
+** References
+- [[http://caml.inria.fr/pub/papers/xleroy-zinc.pdf][Zinc]]
+- [[http://git.annexia.org/?p=jonesforth.git;a=blob;f=jonesforth.S;h=45e6e854a5d2a4c3f26af264dfce56379d401425;hb=HEAD][JonesForth]]
+- [[http://www.more-magic.net/posts/internals-data-representation.html][Chicken data representation]]
+- [[http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/][Baby's first garbage collector]]
+- [[http://borkware.com/hacks/CRefresher.pdf][A C Refresher]]
+** Tools
+- [[https://soupi.github.io/insect/][binsect]]
