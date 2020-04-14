@@ -9,8 +9,11 @@ int interpret(int* program);
 void print_array(int size, int* array);
 
 int main(void) {
+
   // int program[] = { 1, 17, 2, 0 }; // print 17
-  int program[] = { 1, 1, 1, 2, 3, 4, 5, 4, 5, 2, 0 }; // print (1 + 2)
+  // int program[] = { 1, 1, 1, 2, 3, 4, 5, 4, 5, 2, 0 }; // print (1 + 2)
+  // print (1 + (2 + (3 + (4 + 5)))))
+  int program[] = { 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 2, 0 };
   return interpret(program);
 }
 
@@ -19,9 +22,9 @@ int main(void) {
    - 0: Halt
    - 1: Load <int>
    - 2: Print
-   - 3: Add top 2 items on the stack
-   - 4: Swap top 2 items on the stack
-   - 5: Pop the top item off the stack
+   - 3: Swap top 2 items on the stack
+   - 4: Pop the top item off the stack
+   - 5: Add top 2 items on the stack
 
  */
 
@@ -30,9 +33,9 @@ int interpret(int* program) {
     &&halt,
     &&load_int_lit,
     &&print,
-    &&add,
     &&swap,
-    &&pop
+    &&pop,
+    &&add
   };
 
   int stack[1023] = { 0 };
@@ -65,15 +68,6 @@ int interpret(int* program) {
   printf("%d\n", stack[sp]);
   goto *instructions[program[++ip]];
 
- add:
-  #if DEBUG
-  DEBUG_PRINT("add");
-  #endif
-
-  ++sp;
-  stack[sp] = stack[sp - 1] + stack[sp - 2];
-  goto *instructions[program[++ip]];
-
  swap:
   #if DEBUG
   DEBUG_PRINT("swap");
@@ -91,6 +85,16 @@ int interpret(int* program) {
 
   --sp;
   goto *instructions[program[++ip]];
+
+ add:
+  #if DEBUG
+  DEBUG_PRINT("add");
+  #endif
+
+  ++sp;
+  stack[sp] = stack[sp - 1] + stack[sp - 2];
+  goto *instructions[program[++ip]];
+
 
   return 1;
 }
