@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_PRINT(op) \
   printf("(%d) %s | sp: %d | program[ip]: %d | stack: ", ip, (op), sp, program[ip]); \
   print_array(sp + 1, stack);
@@ -8,12 +8,22 @@
 int interpret(int* program);
 void print_array(int size, int* array);
 
-int main(void) {
+/*
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    puts("Expecting the first argument to be the input file.\n");
+    return 2;
+  }
 
-  // int program[] = { 1, 17, 2, 0 }; // print 17
-  // int program[] = { 1, 1, 1, 2, 3, 4, 5, 4, 5, 2, 0 }; // print (1 + 2)
-  // print (1 + (2 + (3 + (4 + 5)))))
-  int program[] = { 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 2, 0 };
+  FILE *fp = fopen(argv[argc], "r");
+  */
+
+int main(void) {
+  FILE *fp = fopen("a.bin", "r");
+  int program[255];
+  fread(program, sizeof(program), sizeof(int), fp);
+  fclose(fp);
+
   return interpret(program);
 }
 
@@ -38,6 +48,7 @@ int interpret(int* program) {
     &&add
   };
 
+  int temp;
   int stack[1023] = { 0 };
   int sp = -1;
   int ip = 0;
@@ -73,9 +84,9 @@ int interpret(int* program) {
   DEBUG_PRINT("swap");
   #endif
 
-  int x = stack[sp];
+  temp = stack[sp];
   stack[sp] = stack[sp - 1];
-  stack[sp - 1] = x;
+  stack[sp - 1] = temp;
   goto *instructions[program[++ip]];
 
  pop:
@@ -105,3 +116,11 @@ void print_array(int size, int* array) {
   }
   puts("\n");
 }
+
+// tests
+
+
+  // int program[] = { 1, 17, 2, 0 }; // print 17
+  // int program[] = { 1, 1, 1, 2, 3, 4, 5, 4, 5, 2, 0 }; // print (1 + 2)
+  // print (1 + (2 + (3 + (4 + 5)))))
+  //int program[] = { 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 3, 4, 2, 0 };

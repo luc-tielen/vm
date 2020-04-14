@@ -24,6 +24,11 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
     putInfo "Running _build/vm"
     cmd_ "_build/vm" "_build/vm"
 
+  phony "test" $ do
+    need ["_build/vm" <.> exe]
+    putInfo "Testing vm"
+    cmd_ "tests/Tests.hs" ""
+
   "_build/vm" <.> exe %> \out -> do
     cs <- getDirectoryFiles "src" ["//*.c"]
     let os = ["_build" </> "src" </> c -<.> "o" | c <- cs]

@@ -5,22 +5,23 @@ I hope to work on this long enough to get to implementing closures, garbage coll
 I'll be taking cues from OCaml and Chicken Scheme, along with other resources, combined with some experimentation.
 I don't exactly know what I'm doing, but I have a rough idea. So please be patient with me!
 ** Tasks
-*** Decide on bytecode scheme
+*** DONE Decide on bytecode scheme
 - load int, add, push, pop, print, halt
-*** Add demo programs
+*** DONE Add demo programs
 | Program                         | Expected result |
 |---------------------------------+-----------------|
 | 1 print halt;                   | print 1         |
 | 1 2 add 3 4 add add print halt; | print 10        |
-*** Implement interpreter for demo programs
+*** DONE Implement interpreter for demo programs
 Should have a stack, stack pointer, instruction pointer
 
 - Start with: just load int, print and halt
 - Later add: push, pop, add
-*** Write tests for the above in Haskell
-*** Add strings
+*** TODO Write tests for the above in Haskell
+Need to actually test print output
+*** TODO Add strings
 - Heap allocated strings, int-to-str, concat, change print to only print strings
-*** Add Automatic Memory Management for Heap Allocated Objects
+*** TODO Add Automatic Memory Management for Heap Allocated Objects
 *** Add bytearrays
 *** Add Jumps and Conditional Jumps
 *** Add Functions and Closures
