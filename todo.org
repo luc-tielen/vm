@@ -29,6 +29,8 @@ Should have a stack, stack pointer, instruction pointer
 - [[http://git.annexia.org/?p=jonesforth.git;a=blob;f=jonesforth.S;h=45e6e854a5d2a4c3f26af264dfce56379d401425;hb=HEAD][JonesForth]]
 - [[http://www.more-magic.net/posts/internals-data-representation.html][Chicken data representation]]
 - [[http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/][Baby's first garbage collector]]
+- [[https://eli.thegreenplace.net/2012/07/12/computed-goto-for-efficient-dispatch-tables/][Computed Gotos]]
 - [[http://borkware.com/hacks/CRefresher.pdf][A C Refresher]]
+- [[https://en.cppreference.com/w/c][C Reference]]
 ** Tools
 - [[https://soupi.github.io/insect/][binsect]]
