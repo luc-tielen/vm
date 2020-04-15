@@ -2,13 +2,16 @@
 -- stack --resolver lts-15.7 script --package bytestring --package cereal --package hspec --package process
 
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
+import Data.Bits
 import Data.Int
 import Data.Serialize
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import Test.Hspec
 import System.Process
 
-import Test.Hspec
 
 main :: IO ()
 main = hspec $ do
@@ -37,13 +40,21 @@ main = hspec $ do
       result <- readProcess "_build/vm" ["a.bin"] ""
       result `shouldBe` "1\n"
 
+    it "prints \"hello\"" $ do
+      writeTestToFile "a.bin" . compile $
+        [ LitStr "hello", PrintStr, Halt ]
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "hello\n"
+
 type Program' = [Stmt]
 
 data Stmt
   = Lit Int64
+  | LitStr BSC.ByteString
   | Add
   | Swap
   | Print
+  | PrintStr
   | Halt
   deriving (Show, Read)
 
@@ -53,14 +64,22 @@ print_ = putWord8 2
 swap_  = putWord8 3
 pop_   = putWord8 4
 add_   = putWord8 5
-lit_ n = putInt64le n
+lit_ n = putInt64le (shiftL n 1 + 1)
+str_ :: BS.ByteString -> Put
+str_ str = do
+  putWord8 6
+  putWord8 (fromIntegral (BSC.length str))
+  mapM_ (putInt8 . fromIntegral) (BS.unpack str)
+printStr_ = putWord8 7
 
 compileStmt :: Stmt -> Put
 compileStmt = \case
   Lit n -> load_ *> lit_ n
+  LitStr str -> str_ str
   Add -> sequence_ [add_, swap_, pop_, swap_, pop_]
   Swap -> swap_
   Print -> print_
+  PrintStr -> printStr_
   Halt -> halt_
 
 compile :: Program' -> Put
