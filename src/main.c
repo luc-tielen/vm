@@ -38,6 +38,16 @@ int main(void) {
 
  */
 
+struct vm {
+  unsigned char* program;
+  long* stack;
+  int sp;
+  int ip;
+
+  long temp0;
+  long temp1;
+};
+
 int interpret(unsigned char* program) {
   void* instructions[] = {
     &&halt,
@@ -48,12 +58,14 @@ int interpret(unsigned char* program) {
     &&add
   };
 
-  int temp;
   long stack[1023] = { 0 };
-  int sp = -1;
-  int ip = 0;
-
-  goto *instructions[program[ip]];
+  struct vm vm;
+  vm.program = program;
+  vm.stack = stack;
+  vm.sp = -1;
+  vm.ip = 0;
+  
+  goto *instructions[vm.program[vm.ip]];
 
  halt:
   #if DEBUG
@@ -67,45 +79,45 @@ int interpret(unsigned char* program) {
   DEBUG_PRINT("load_int_lit");
   #endif
 
-  ++ip;
-  stack[++sp] = (long)(program[ip]);
-  ip += 8;
-  goto *instructions[program[ip]];
+  ++vm.ip;
+  stack[++vm.sp] = (long)(vm.program[vm.ip]);
+  vm.ip += 8;
+  goto *instructions[vm.program[vm.ip]];
 
  print:
   #if DEBUG
   DEBUG_PRINT("print");
   #endif
 
-  printf("%ld\n", stack[sp]);
-  goto *instructions[program[++ip]];
+  printf("%ld\n", vm.stack[vm.sp]);
+  goto *instructions[vm.program[++vm.ip]];
 
  swap:
   #if DEBUG
   DEBUG_PRINT("swap");
   #endif
 
-  temp = stack[sp];
-  stack[sp] = stack[sp - 1];
-  stack[sp - 1] = temp;
-  goto *instructions[program[++ip]];
+  vm.temp0 = vm.stack[vm.sp];
+  vm.stack[vm.sp] = vm.stack[vm.sp - 1];
+  vm.stack[vm.sp - 1] = vm.temp0;
+  goto *instructions[vm.program[++vm.ip]];
 
  pop:
   #if DEBUG
   DEBUG_PRINT("pop");
   #endif
 
-  --sp;
-  goto *instructions[program[++ip]];
+  --vm.sp;
+  goto *instructions[vm.program[++vm.ip]];
 
  add:
   #if DEBUG
   DEBUG_PRINT("add");
   #endif
 
-  ++sp;
-  stack[sp] = stack[sp - 1] + stack[sp - 2];
-  goto *instructions[program[++ip]];
+  ++vm.sp;
+  vm.stack[vm.sp] = vm.stack[vm.sp - 1] + vm.stack[vm.sp - 2];
+  goto *instructions[vm.program[++vm.ip]];
 
 
   return 1;

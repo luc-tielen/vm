@@ -20,6 +20,7 @@ Should have a stack, stack pointer, instruction pointer
 *** DONE Write tests for the above in Haskell
 Need to actually test print output
 *** DONE Refactor bytecode from int to bytes + int to long
+*** DONE Refactor vm to struct
 *** TODO Add strings
 - Heap allocated strings, int-to-str, concat, change print to only print strings
 *** TODO Add Automatic Memory Management for Heap Allocated Objects
