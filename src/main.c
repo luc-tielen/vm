@@ -2,11 +2,11 @@
 
 #define DEBUG 0
 #define DEBUG_PRINT(op) \
-  printf("(%d) %s | sp: %d | program[ip]: %d | stack: ", ip, (op), sp, program[ip]); \
-  print_array(sp + 1, stack);
+  fprintf(stderr, "(%d) %s | sp: %d | program[ip]: %d | stack: ", ip, (op), sp, program[ip]); \
+  fprint_array(stderr, sp + 1, stack);
 
-int interpret(int* program);
-void print_array(int size, int* array);
+int interpret(unsigned char* program);
+void fprint_array(FILE* fp, int size, int* array);
 
 /*
 int main(int argc, char* argv[]) {
@@ -20,8 +20,8 @@ int main(int argc, char* argv[]) {
 
 int main(void) {
   FILE *fp = fopen("a.bin", "r");
-  int program[255];
-  fread(program, sizeof(program), sizeof(int), fp);
+  unsigned char program[1023];
+  fread(program, sizeof(program), 1, fp);
   fclose(fp);
 
   return interpret(program);
@@ -38,7 +38,7 @@ int main(void) {
 
  */
 
-int interpret(int* program) {
+int interpret(unsigned char* program) {
   void* instructions[] = {
     &&halt,
     &&load_int_lit,
@@ -49,7 +49,7 @@ int interpret(int* program) {
   };
 
   int temp;
-  int stack[1023] = { 0 };
+  long stack[1023] = { 0 };
   int sp = -1;
   int ip = 0;
 
@@ -68,15 +68,16 @@ int interpret(int* program) {
   #endif
 
   ++ip;
-  stack[++sp] = program[ip];
-  goto *instructions[program[++ip]];
+  stack[++sp] = (long)(program[ip]);
+  ip += 8;
+  goto *instructions[program[ip]];
 
  print:
   #if DEBUG
   DEBUG_PRINT("print");
   #endif
 
-  printf("%d\n", stack[sp]);
+  printf("%ld\n", stack[sp]);
   goto *instructions[program[++ip]];
 
  swap:
@@ -110,11 +111,11 @@ int interpret(int* program) {
   return 1;
 }
 
-void print_array(int size, int* array) {
+void fprint_array(FILE* fp, int size, int* array) {
   for (int i = 0; i < size; ++i) {
-    printf("%d ", array[i]);
+    fprintf(fp, "%d ", array[i]);
   }
-  puts("\n");
+  fprintf(stderr, "\n");
 }
 
 // tests
