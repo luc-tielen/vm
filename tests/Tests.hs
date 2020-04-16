@@ -46,6 +46,70 @@ main = hspec $ do
       result <- readProcess "_build/vm" ["a.bin"] ""
       result `shouldBe` "hello\n"
 
+    it "prints \"hello\" \"world\"" $ do
+      writeTestToFile "a.bin" . compile $
+        [ LitStr "hello", PrintStr, Pop
+        , LitStr "world", PrintStr, Pop
+        , Halt
+        ]
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "hello\nworld\n"
+
+    it "prints a few lines" $ do
+      writeTestToFile "a.bin" . compile $
+        [ LitStr "hello",  PrintStr
+        , LitStr "world",  PrintStr, Pop
+        , LitStr "how",    PrintStr, Pop
+        , LitStr "are",    PrintStr
+        , LitStr "you",    PrintStr, Pop
+        , LitStr "today?", PrintStr, Pop
+        , Halt
+        ]
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "hello\nworld\nhow\nare\nyou\ntoday?\n"
+
+    it "prints a few more lines" $ do
+      writeTestToFile "a.bin" . compile $
+        [ LitStr "hello",       PrintStr
+        , LitStr "world",       PrintStr, Pop
+        , LitStr "how",         PrintStr, Pop
+        , LitStr "are",         PrintStr
+        , LitStr "you",         PrintStr, Pop
+        , LitStr "today?",      PrintStr, Pop
+        , LitStr "let",         PrintStr
+        , LitStr "me",          PrintStr, Pop
+        , LitStr "tell",        PrintStr, Pop
+        , LitStr "you",         PrintStr
+        , LitStr "something",   PrintStr, Pop
+        , LitStr "interesting", PrintStr, Pop
+        , LitStr "about",       PrintStr, Pop
+        , LitStr "fish?",       PrintStr, Pop
+        , LitStr "i dunno",     PrintStr
+        , LitStr "have ",       PrintStr, Pop
+        , LitStr " fun",        PrintStr, Pop
+        , Halt
+        ]
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` unlines
+        [ "hello"
+        , "world"
+        , "how"
+        , "are"
+        , "you"
+        , "today?"
+        , "let"
+        , "me"
+        , "tell"
+        , "you"
+        , "something"
+        , "interesting"
+        , "about"
+        , "fish?"
+        , "i dunno"
+        , "have "
+        , " fun"
+        ]
+
 type Program' = [Stmt]
 
 data Stmt
@@ -53,6 +117,7 @@ data Stmt
   | LitStr BSC.ByteString
   | Add
   | Swap
+  | Pop
   | Print
   | PrintStr
   | Halt
@@ -78,6 +143,7 @@ compileStmt = \case
   LitStr str -> str_ str
   Add -> sequence_ [add_, swap_, pop_, swap_, pop_]
   Swap -> swap_
+  Pop -> pop_
   Print -> print_
   PrintStr -> printStr_
   Halt -> halt_

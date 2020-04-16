@@ -33,7 +33,7 @@ or not.
 *** DONE Refactor stack/heap objects
 Stack objects should be a union of long / unsigned char pointer.
 Heap objects should be a struct which has a size, is marked boolean, data.
-*** TODO Add Automatic Memory Management for Heap Allocated Objects
+*** DONE Add Automatic Memory Management for Heap Allocated Objects
 - Add nursery (gen0) and gen1 heaps
 - Each allocation is added to the nursery
 - When the nursery is full, collect garbage
