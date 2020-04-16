@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_PRINT(op) \
   fprintf(stderr, "(%u) %s | sp: %d | program[ip]: %d | stack: ", vm.ip, (op), vm.sp, vm.program[vm.ip]); \
   fprint_stack(stderr, vm.sp + 1, vm.stack);
@@ -42,17 +42,30 @@ int main(void) {
 
  */
 
+struct HeapObject {
+  unsigned char size;
+  unsigned char is_marked; // we might decide to mark twice before promoting
+  unsigned char data[];
+};
+
+union StackObject {
+  long integer;
+  struct HeapObject* pointer;
+};
+
 struct vm {
   unsigned char* program;
   unsigned int ip;
 
-  long* stack;
+  union StackObject* stack;
   int sp;
+
+
 
   long temp0;
   long temp1;
 
-  unsigned char* temp_ptr0;
+  struct HeapObject* temp_ptr0;
 };
 
 int interpret(unsigned char* program) {
@@ -68,7 +81,7 @@ int interpret(unsigned char* program) {
   };
 
   unsigned char length = 0;
-  long stack[1023] = { 0 };
+  union StackObject stack[1023];
   struct vm vm;
   vm.program = program;
   vm.ip = 0;
@@ -90,7 +103,7 @@ int interpret(unsigned char* program) {
   #endif
 
   ++vm.ip;
-  stack[++vm.sp] = (long)(vm.program[vm.ip]);
+  stack[++vm.sp].integer = (long)(vm.program[vm.ip]);
   vm.ip += 8;
   goto *instructions[vm.program[vm.ip]];
 
@@ -101,10 +114,11 @@ int interpret(unsigned char* program) {
 
   ++vm.ip;
   length = vm.program[vm.ip++];
-  vm.temp_ptr0 = malloc(length+1);
-  *vm.temp_ptr0 = length;
-  memcpy(&(vm.program[vm.ip]), vm.temp_ptr0+2, length); // pointers always align
-  stack[++vm.sp] = (long)vm.temp_ptr0;
+  vm.temp_ptr0 = malloc(sizeof(unsigned char) + sizeof(unsigned char) + length); // size + is_marked + data
+  vm.temp_ptr0->size = length;
+  vm.temp_ptr0->is_marked = 0;
+  memcpy(&(vm.program[vm.ip]), vm.temp_ptr0->data, length);
+  stack[++vm.sp].integer = (long)vm.temp_ptr0;
   vm.ip += length;
   goto *instructions[vm.program[vm.ip]];
 
@@ -113,7 +127,7 @@ int interpret(unsigned char* program) {
   DEBUG_PRINT("print");
   #endif
 
-  printf("%ld\n", (vm.stack[vm.sp] >> 1)); // to remove the least significant bit
+  printf("%ld\n", (vm.stack[vm.sp].integer >> 1)); // to remove the least significant bit
   goto *instructions[vm.program[++vm.ip]];
 
  print_str:
@@ -121,8 +135,8 @@ int interpret(unsigned char* program) {
   DEBUG_PRINT("print_str");
   #endif
 
-  vm.temp_ptr0 = (unsigned char*)(vm.stack[vm.sp]);
-  printf("%.*s\n", *vm.temp_ptr0, ((char*)(vm.temp_ptr0+2)));
+  vm.temp_ptr0 = vm.stack[vm.sp].pointer;
+  printf("%.*s\n", vm.temp_ptr0->size, ((char*)(vm.temp_ptr0->data)));
   goto *instructions[vm.program[++vm.ip]];
 
  swap:
@@ -130,9 +144,9 @@ int interpret(unsigned char* program) {
   DEBUG_PRINT("swap");
   #endif
 
-  vm.temp0 = vm.stack[vm.sp];
+  vm.temp0 = vm.stack[vm.sp].integer;
   vm.stack[vm.sp] = vm.stack[vm.sp - 1];
-  vm.stack[vm.sp - 1] = vm.temp0;
+  vm.stack[vm.sp - 1].integer = vm.temp0;
   goto *instructions[vm.program[++vm.ip]];
 
  pop:
@@ -149,7 +163,7 @@ int interpret(unsigned char* program) {
   #endif
 
   ++vm.sp;
-  vm.stack[vm.sp] = (((vm.stack[vm.sp - 1] >> 1) + (vm.stack[vm.sp - 2] >> 1)) << 1) + 1;
+  vm.stack[vm.sp].integer = (((vm.stack[vm.sp - 1].integer >> 1) + (vm.stack[vm.sp - 2].integer >> 1)) << 1) + 1;
   goto *instructions[vm.program[++vm.ip]];
 
 

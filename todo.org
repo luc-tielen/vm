@@ -30,10 +30,18 @@ significant bit with 0.
 This is so that the garbage collector will know if it needs to chase a pointer
 or not.
 *** DONE Add heap allocated strings + print_str
+*** DONE Refactor stack/heap objects
+Stack objects should be a union of long / unsigned char pointer.
+Heap objects should be a struct which has a size, is marked boolean, data.
+*** TODO Add Automatic Memory Management for Heap Allocated Objects
+- Add nursery (gen0) and gen1 heaps
+- Each allocation is added to the nursery
+- When the nursery is full, collect garbage
+- Go over the stack and mark reachable objects, move reachable objects to gen1
+  and free the non-reachable objects
 *** TODO Setup valgrind
 *** TODO More Strings
 - int-to-str, concat, change print to only print strings
-*** TODO Add Automatic Memory Management for Heap Allocated Objects
 *** Add bytearrays
 *** Add Jumps and Conditional Jumps
 *** Add Functions and Closures
