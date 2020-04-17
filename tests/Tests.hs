@@ -110,6 +110,21 @@ main = hspec $ do
         , " fun"
         ]
 
+  -- We want to test the gen1 gc
+  -- It currently has the size of 32
+  -- We want to load many literals to trigger the gen0 gc
+  -- But we want to get rid of them at some point
+    it "gen0 + gen1 gc" $ do
+      let
+        strings = (<>)
+          [ LitStr (BSC.pack [c]) | c <- ['a'..'e'] ]
+          [ Swap, Pop, Swap, Pop, Swap, Pop ]
+        code = take 120 (cycle strings) <> [PrintStr, Halt]
+
+      writeTestToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "b\n"
+
 type Program' = [Stmt]
 
 data Stmt

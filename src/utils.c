@@ -16,7 +16,7 @@ void fprint_stack(FILE* fp, int size, union StackObject* stack) {
 void fprint_heap(FILE* fp, int size, struct HeapObject** heap) {
   for (int i = 0; i < size; ++i) {
     struct HeapObject* temp_ptr = heap[i];
-    fprintf(fp, "%.*s\n", temp_ptr->size, ((char*)(temp_ptr->data)));
+    fprintf(fp, "%d) %.*s\n", i, temp_ptr->size, ((char*)(temp_ptr->data)));
   }
   fprintf(fp, "\n");
 }

@@ -3,9 +3,9 @@
 
 #define DEBUG 0
 
-#define GEN0_SIZE 3 // We'll keep it small for testing purposes
-#define GEN1_SIZE 4095
-#define STACK_SIZE 1023
+#define GEN0_SIZE 4 // We'll keep it small for testing purposes
+#define GEN1_SIZE 32
+#define STACK_SIZE 1024
 
 struct HeapObject {
   unsigned char size;

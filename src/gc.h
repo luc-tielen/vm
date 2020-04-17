@@ -7,6 +7,7 @@
 #include "types.h"
 
 void gen0_gc(struct VM* vm);
+void gen1_gc(struct VM* vm);
 void cleanup(struct VM* vm);
 
 #endif
