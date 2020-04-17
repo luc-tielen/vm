@@ -40,6 +40,7 @@ struct VM {
   struct HeapObject* temp_ptr0;
 };
 
+void cleanup(struct VM* vm);
 void gen0_gc(struct VM* vm);
 int interpret(unsigned char* program);
 void fprint_stack(FILE* fp, int size, union StackObject* stack);
@@ -111,6 +112,7 @@ int interpret(unsigned char* program) {
   DEBUG_PRINT("halt");
   #endif
 
+  cleanup(&vm);
   return 0;
 
  load_int_lit:
@@ -265,5 +267,14 @@ void gen0_gc(struct VM* vm) {
     fprintf(stderr, "---------------\n");
     fprintf(stderr, "* gen0_gc done \n");
     fprintf(stderr, "---------------\n");
+  }
+}
+
+void cleanup(struct VM* vm) {
+  for (int i = 0; i < vm->gen0p; ++i) {
+    free(vm->gen0[i]);
+  }
+  for (int i = 0; i < vm->gen1p; ++i) {
+    free(vm->gen1[i]);
   }
 }

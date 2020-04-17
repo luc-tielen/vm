@@ -39,7 +39,9 @@ Heap objects should be a struct which has a size, is marked boolean, data.
 - When the nursery is full, collect garbage
 - Go over the stack and mark reachable objects, move reachable objects to gen1
   and free the non-reachable objects
-*** TODO Setup valgrind
+*** DONE Setup valgrind
+*** TODO Add gen1 garbage collector
+*** TODO Reorganize files - types, interpreter, gc
 *** TODO More Strings
 - int-to-str, concat, change print to only print strings
 *** Add bytearrays
