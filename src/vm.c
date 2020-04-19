@@ -39,10 +39,11 @@ int interpret(unsigned char* program) {
     &&print_str
   };
 
-  unsigned char length = 0;
-  struct HeapObject* gen0[GEN0_SIZE];
-  struct HeapObject* gen1[GEN1_SIZE];
-  union StackObject stack[STACK_SIZE] = { {0} };
+  unsigned short heap_info = 0;
+  unsigned short length = 0;
+  HeapObject* gen0[GEN0_SIZE];
+  HeapObject* gen1[GEN1_SIZE];
+  StackObject stack[STACK_SIZE] = { {0} };
   struct VM vm;
   vm.program = program;
   vm.ip = 0;
@@ -80,11 +81,11 @@ int interpret(unsigned char* program) {
   #endif
 
   ++vm.ip;
-  length = vm.program[vm.ip++];
+  heap_info = vm.program[vm.ip++];
+  length = getHeapInfoSize(heap_info);
   vm.temp_ptr0 = malloc(sizeof(unsigned char) + sizeof(unsigned char) + length); // size + is_marked + data
-  vm.temp_ptr0->size = length;
-  vm.temp_ptr0->is_marked = 0;
-  memcpy(vm.temp_ptr0->data, &(vm.program[vm.ip]), length);
+  vm.temp_ptr0->info = heap_info;
+  memcpy(vm.temp_ptr0->data, &(vm.program[++vm.ip]), length);
   stack[++vm.sp].pointer = vm.temp_ptr0;
 
   if (vm.gen0p >= GEN0_SIZE) {
@@ -109,7 +110,7 @@ int interpret(unsigned char* program) {
   #endif
 
   vm.temp_ptr0 = vm.stack[vm.sp].pointer;
-  printf("%.*s\n", vm.temp_ptr0->size, ((char*)(vm.temp_ptr0->data)));
+  printf("%.*s\n", getHeapObjectSize(vm.temp_ptr0), ((char*)(vm.temp_ptr0->data)));
 
   goto *instructions[vm.program[++vm.ip]];
 

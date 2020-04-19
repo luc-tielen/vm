@@ -42,6 +42,31 @@ Heap objects should be a struct which has a size, is marked boolean, data.
 *** DONE Setup valgrind
 *** DONE Reorganize files - types, interpreter, gc
 *** DONE Add gen1 garbage collector
+*** TODO Revise tagging scheme
+Currently we only have heap allocated strings, but if we want
+to have lists, we need to be able to distinguish pointers and non pointers
+(for garbage collection purposes).
+
+We will change the way we represent items on the heap by using 2 bytes
+to represent: size, is_marked, is_bytearray.
+
+- 14 bits - size
+- 1 bit - is_bytearray
+- 1 bit - is_marked
+
+when is_bytearray is true, we count number of elements instead of bytes.
+The real size should be ~size * sizeof(StackObject)~.
+
+So when we have a bytearray, non of the data fields are pointers.
+When we don't, we will represent each data field the same way we do
+on the stack.
+
+Each field can be either an integer literal or a pointer,
+and we distinguish between the two using the least significant bit:
+
+- 1 means integer, which we will shift right once to get the real number
+- 0 means pointer, which we will use as-is
+*** TODO Pairs/Lists
 *** TODO More Strings
 - int-to-str, concat, change print to only print strings
 *** Add bytearrays

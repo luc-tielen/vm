@@ -32,8 +32,9 @@ void gen0_gc(struct VM* vm) {
 
   // sweep / copy
   for (int i = 0; i < GEN0_SIZE; ++i) {
-    if (vm->gen0[i]->is_marked) {
-      vm->gen0[i]->is_marked = 0;
+    if (vm->gen0[i]->info & IS_MARKED) {
+      // clear is_marked - @TODO refactor
+      vm->gen0[i]->info = ((vm->gen0[i]->info >> 1) << 1);
 
       if (vm->gen1p >= GEN1_SIZE) {
         gen1_gc(vm);
@@ -68,7 +69,8 @@ void gen0_gc(struct VM* vm) {
 // Let's do another marking for now.
 void gen1_gc(struct VM* vm) {
   for (int i = 0; i < GEN1_SIZE; ++i) {
-    vm->gen1[i]->is_marked = 0;
+    // clear is_marked - @TODO refactor
+    vm->gen1[i]->info = ((vm->gen1[i]->info >> 1) << 1);
   }
   mark(vm);
 
@@ -86,7 +88,7 @@ void gen1_gc(struct VM* vm) {
 
   // copy / sweep
   for (int i = 0; i < GEN1_SIZE; ++i) {
-    if (vm->gen1[i]->is_marked) {
+    if (vm->gen1[i]->info & IS_MARKED) {
         gen1_temp[gen1p_temp++] = vm->gen1[i];
     } else {
       free(vm->gen1[i]);
@@ -123,7 +125,7 @@ void mark(struct VM* vm) {
     } else {
       // When we'll have heap object that can pointer to other objects, we'll chase these pointers.
       struct HeapObject* temp_ptr = vm->stack[i].pointer;
-      temp_ptr->is_marked = 1;
+      temp_ptr->info |= 1;
     }
   }
 }

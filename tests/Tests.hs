@@ -148,7 +148,7 @@ lit_ n = putInt64le (shiftL n 1 + 1)
 str_ :: BS.ByteString -> Put
 str_ str = do
   putWord8 6
-  putWord8 (fromIntegral (BSC.length str))
+  putWord16le (fromIntegral (setBit (shiftL (BSC.length str) 2) 1))
   mapM_ (putInt8 . fromIntegral) (BS.unpack str)
 printStr_ = putWord8 7
 

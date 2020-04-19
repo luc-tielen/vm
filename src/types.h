@@ -7,16 +7,18 @@
 #define GEN1_SIZE 32
 #define STACK_SIZE 1024
 
-struct HeapObject {
-  unsigned char size;
-  unsigned char is_marked; // we might decide to mark twice before promoting
-  unsigned char data[];
-};
+#define IS_MARKED 1
+#define IS_BYTEARRAY_TAG 2
 
-union StackObject {
+typedef struct HeapObject {
+  unsigned short info;
+  unsigned char data[]; // could be either bytearray or multiple stack objects
+} HeapObject;
+
+typedef union StackObject {
   long integer;
   struct HeapObject* pointer;
-};
+} StackObject;
 
 struct VM {
   unsigned char* program;
