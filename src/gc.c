@@ -32,7 +32,7 @@ void gen0_gc(struct VM* vm) {
 
   // sweep / copy
   for (int i = 0; i < GEN0_SIZE; ++i) {
-    if (vm->gen0[i]->info & IS_MARKED) {
+    if (vm->gen0[i]->info & IS_MARKED_TAG) {
       // clear is_marked - @TODO refactor
       vm->gen0[i]->info = ((vm->gen0[i]->info >> 1) << 1);
 
@@ -88,7 +88,7 @@ void gen1_gc(struct VM* vm) {
 
   // copy / sweep
   for (int i = 0; i < GEN1_SIZE; ++i) {
-    if (vm->gen1[i]->info & IS_MARKED) {
+    if (vm->gen1[i]->info & IS_MARKED_TAG) {
         gen1_temp[gen1p_temp++] = vm->gen1[i];
     } else {
       free(vm->gen1[i]);
@@ -117,15 +117,37 @@ void gen1_gc(struct VM* vm) {
   }
 }
 
+// Recursively mark live heap objects
+// We could probably find a faster way to do this but this is enough for now
+void mark_pointer(HeapObject* obj) {
+  if (obj->info & IS_MARKED_TAG) {
+    return;
+  }
+  // set is_marked @TODO - rector
+  obj->info |= 1;
+  if (obj->info & IS_BYTEARRAY_TAG) {
+    return;
+  }
+  unsigned short size = getHeapInfoLogicalSize(obj->info);
+
+  StackObject* data;
+  for (unsigned int i = 0; i < size; ++i) {
+    data = &((StackObject*)(obj->data))[i];
+    if (data->integer & IS_INTEGER_TAG) {
+    } else {
+      mark_pointer(data->pointer);
+    }
+  }
+}
+
 void mark(struct VM* vm) {
   // mark
   for (int i = 0; i < vm->sp; ++i) {
-    if (vm->stack[i].integer & 1) {
+    if (vm->stack[i].integer & IS_INTEGER_TAG) {
       continue;
     } else {
       // When we'll have heap object that can pointer to other objects, we'll chase these pointers.
-      struct HeapObject* temp_ptr = vm->stack[i].pointer;
-      temp_ptr->info |= 1;
+      mark_pointer(vm->stack[i].pointer);
     }
   }
 }

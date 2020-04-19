@@ -24,13 +24,21 @@ void fprint_heap(FILE* fp, int size, HeapObject** heap) {
 }
 
 unsigned short getHeapObjectSize(HeapObject* ptr) {
-  return getHeapInfoSize(ptr->info);
+  return getHeapInfoSizeInBytes(ptr->info);
 }
 
-unsigned short getHeapInfoSize(unsigned short info) {
+unsigned short getHeapInfoSizeInBytes(unsigned short info) {
   if (info & IS_BYTEARRAY_TAG) {
     return (info >> 2);
   } else {
     return (info >> 2) * sizeof(StackObject);
+  }
+}
+
+unsigned short getHeapInfoLogicalSize(unsigned short info) {
+  if (info & IS_BYTEARRAY_TAG) {
+    return (info >> 2);
+  } else {
+    return (info >> 2);
   }
 }

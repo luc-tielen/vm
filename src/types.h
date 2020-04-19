@@ -7,8 +7,10 @@
 #define GEN1_SIZE 32
 #define STACK_SIZE 1024
 
-#define IS_MARKED 1
+#define IS_MARKED_TAG 1
 #define IS_BYTEARRAY_TAG 2
+
+#define IS_INTEGER_TAG 1
 
 typedef struct HeapObject {
   unsigned short info;

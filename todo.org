@@ -42,7 +42,7 @@ Heap objects should be a struct which has a size, is marked boolean, data.
 *** DONE Setup valgrind
 *** DONE Reorganize files - types, interpreter, gc
 *** DONE Add gen1 garbage collector
-*** TODO Revise tagging scheme
+*** DONE Revise tagging scheme
 Currently we only have heap allocated strings, but if we want
 to have lists, we need to be able to distinguish pointers and non pointers
 (for garbage collection purposes).
@@ -66,7 +66,16 @@ and we distinguish between the two using the least significant bit:
 
 - 1 means integer, which we will shift right once to get the real number
 - 0 means pointer, which we will use as-is
-*** TODO Pairs/Lists
+*** DONE GC pointer chasing
+*** TODO Pairs/Lists - we need this to test the pointer chasing in the GC
+- Nil will be represented as the number 1
+- Cons will be represented as a two stack objects:
+  1. the first is the value
+  2. the second is the rest of the list
+
+We could also just add regular arrays as that seems pretty straightforward.
+Just an array of StackObjects.
+*** TODO Add tests for pointer chasing in GC
 *** TODO More Strings
 - int-to-str, concat, change print to only print strings
 *** Add bytearrays

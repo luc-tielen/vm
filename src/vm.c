@@ -82,7 +82,7 @@ int interpret(unsigned char* program) {
 
   ++vm.ip;
   heap_info = vm.program[vm.ip++];
-  length = getHeapInfoSize(heap_info);
+  length = getHeapInfoSizeInBytes(heap_info);
   vm.temp_ptr0 = malloc(sizeof(unsigned char) + sizeof(unsigned char) + length); // size + is_marked + data
   vm.temp_ptr0->info = heap_info;
   memcpy(vm.temp_ptr0->data, &(vm.program[++vm.ip]), length);
