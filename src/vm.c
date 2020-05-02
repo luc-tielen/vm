@@ -25,6 +25,8 @@
    - 7: Print the top item (which is expected to be a string)
    - 8: Cons <size> will create a new heap object and will load
         the last <size> elements on the stack
+   - 9: Index <index> will put the <index> element in the
+        heap object on the stack
 
  */
 
@@ -39,7 +41,8 @@ int interpret(uint8_t* program) {
     &&add,
     &&load_str_lit,
     &&print_str,
-    &&cons
+    &&cons,
+    &&heap_index
   };
 
   uint16_t heap_info = 0;
@@ -170,6 +173,25 @@ int interpret(uint8_t* program) {
   gen0[vm.gen0p++] = vm.temp_ptr0;
 
   goto *instructions[vm.program[vm.ip]];
+
+
+  // - 9: Index <index> will put the <index> element in the
+  //      heap object on the stack
+ heap_index:
+  #if DEBUG
+  DEBUG_PRINT("heap_index");
+  #endif
+
+  ++vm.ip;
+  heap_info = vm.program[vm.ip++];
+  logical_size = getHeapInfoLogicalSize(heap_info);
+  ++vm.ip;
+  ++vm.sp;
+
+  vm.stack[vm.sp] = *(StackObject*)(&(vm.stack[vm.sp - 1].pointer->data[logical_size * sizeof(StackObject)])); // again, quite hacky.
+
+  goto *instructions[vm.program[vm.ip]];
+
 
   // we don't expect to reach here. We expect HALT to be the last instruction
   return 1;

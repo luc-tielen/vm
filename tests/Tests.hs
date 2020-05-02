@@ -4,6 +4,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.Word
 import Data.Bits
 import Data.Int
 import Data.Serialize
@@ -127,25 +128,39 @@ main = hspec $ do
 
     it "simple list" $ do
       let
-        code = [Lit 2, Lit 1, Nil, Cons 2, Cons 2, Halt] -- (1 : 2 : Nil)
+        code = [Lit 1, Lit 2, Nil, Cons 2, Cons 2, HeapIndex 0, Print, Halt] -- (1 : 2 : Nil)
 
       writeTestToFile "a.bin" . compile $ code
       result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` ""
+      result `shouldBe` "1\n"
 
+
+    it "simple list 2" $ do
+      let
+        code =
+          [ Lit 1, Lit 2, Nil, Cons 2, Cons 2  -- (1 : 2 : Nil)
+          , HeapIndex 0, Print, Pop
+          , HeapIndex 1, HeapIndex 0, Print, Pop, Pop
+          , Halt
+          ]
+
+      writeTestToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "1\n2\n"
 
 type Program' = [Stmt]
 
 data Stmt
   = Lit Int64
   | LitStr BSC.ByteString
-  | Cons Int
-  | Nil
   | Add
   | Swap
   | Pop
   | Print
   | PrintStr
+  | Cons Word16
+  | Nil
+  | HeapIndex Word16
   | Halt
   deriving (Show, Read)
 
@@ -162,10 +177,15 @@ str_ str = do
   putWord16le (fromIntegral (markByteArray (shiftL (BSC.length str) 2)))
   mapM_ (putInt8 . fromIntegral) (BS.unpack str)
 printStr_ = putWord8 7
-cons_ :: Int -> Put
+cons_ :: Word16 -> Put
 cons_ size = do
   putWord8 8
   putWord16le (fromIntegral (shiftL size 2))
+
+index_ :: Word16 -> Put
+index_ i = do
+  putWord8 9
+  putWord16le (fromIntegral (shiftL i 2))
 
 markByteArray :: Int -> Int
 markByteArray num = setBit num 1
@@ -185,9 +205,10 @@ compileStmt = \case
   Cons size ->
     sequence_
       ( cons_ size
-      : take (size*2) (cycle [swap_, pop_])
+      : take (fromIntegral size * 2) (cycle [swap_, pop_])
       )
   Nil -> compileStmt (Lit 0)
+  HeapIndex i -> index_ i
   Halt -> halt_
 
 compile :: Program' -> Put
