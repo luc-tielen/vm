@@ -27,7 +27,7 @@
  */
 
 
-int interpret(unsigned char* program) {
+int interpret(uint8_t* program) {
   void* instructions[] = {
     &&halt,
     &&load_int_lit,
@@ -39,8 +39,8 @@ int interpret(unsigned char* program) {
     &&print_str
   };
 
-  unsigned short heap_info = 0;
-  unsigned short length = 0;
+  uint16_t heap_info = 0;
+  uint16_t length = 0;
   HeapObject* gen0[GEN0_SIZE];
   HeapObject* gen1[GEN1_SIZE];
   StackObject stack[STACK_SIZE] = { {0} };
@@ -83,7 +83,7 @@ int interpret(unsigned char* program) {
   ++vm.ip;
   heap_info = vm.program[vm.ip++];
   length = getHeapInfoSizeInBytes(heap_info);
-  vm.temp_ptr0 = malloc(sizeof(unsigned char) + sizeof(unsigned char) + length); // size + is_marked + data
+  vm.temp_ptr0 = malloc(sizeof(uint8_t) + sizeof(uint8_t) + length); // size + is_marked + data
   vm.temp_ptr0->info = heap_info;
   memcpy(vm.temp_ptr0->data, &(vm.program[++vm.ip]), length);
   stack[++vm.sp].pointer = vm.temp_ptr0;

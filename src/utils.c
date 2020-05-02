@@ -23,11 +23,11 @@ void fprint_heap(FILE* fp, int size, HeapObject** heap) {
   fprintf(fp, "\n");
 }
 
-unsigned short getHeapObjectSize(HeapObject* ptr) {
+uint16_t getHeapObjectSize(HeapObject* ptr) {
   return getHeapInfoSizeInBytes(ptr->info);
 }
 
-unsigned short getHeapInfoSizeInBytes(unsigned short info) {
+uint16_t getHeapInfoSizeInBytes(uint16_t info) {
   if (info & IS_BYTEARRAY_TAG) {
     return (info >> 2);
   } else {
@@ -35,7 +35,7 @@ unsigned short getHeapInfoSizeInBytes(unsigned short info) {
   }
 }
 
-unsigned short getHeapInfoLogicalSize(unsigned short info) {
+uint16_t getHeapInfoLogicalSize(uint16_t info) {
   if (info & IS_BYTEARRAY_TAG) {
     return (info >> 2);
   } else {

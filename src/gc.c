@@ -128,7 +128,7 @@ void mark_pointer(HeapObject* obj) {
   if (obj->info & IS_BYTEARRAY_TAG) {
     return;
   }
-  unsigned short size = getHeapInfoLogicalSize(obj->info);
+  uint16_t size = getHeapInfoLogicalSize(obj->info);
 
   StackObject* data;
   for (unsigned int i = 0; i < size; ++i) {

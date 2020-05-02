@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdint.h>
+
 #define DEBUG 0
 
 #define GEN0_SIZE 4 // We'll keep it small for testing purposes
@@ -13,8 +15,8 @@
 #define IS_INTEGER_TAG 1
 
 typedef struct HeapObject {
-  unsigned short info;
-  unsigned char data[]; // could be either bytearray or multiple stack objects
+  uint16_t info;
+  uint8_t  data[]; // could be either bytearray or multiple stack objects
 } HeapObject;
 
 typedef union StackObject {
@@ -23,7 +25,7 @@ typedef union StackObject {
 } StackObject;
 
 struct VM {
-  unsigned char* program;
+  uint8_t* program;
   unsigned int ip;
 
   union StackObject* stack;

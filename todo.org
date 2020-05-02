@@ -67,12 +67,19 @@ and we distinguish between the two using the least significant bit:
 - 1 means integer, which we will shift right once to get the real number
 - 0 means pointer, which we will use as-is
 *** DONE GC pointer chasing
+*** DONE Replace unsigned char with uint8_t
 *** TODO Pairs/Lists - we need this to test the pointer chasing in the GC
-- Nil will be represented as the number 1
-- Cons will be represented as a two stack objects:
+- ListNil will be represented as the number 1
+- ListCons will be represented as a two stack objects:
   1. the first is the value
   2. the second is the rest of the list
 
+- New opcode: Cons <size> will create a new heap object and will load
+  the last <size> elements on the stack
+- New (temp) opcode: PrintIntList: Print each element of a list
+- New opcode: Index <index> will put the <index> element in the
+  heap object on the stack
+*** TODO Arrays?
 We could also just add regular arrays as that seems pretty straightforward.
 Just an array of StackObjects.
 *** TODO Add tests for pointer chasing in GC
