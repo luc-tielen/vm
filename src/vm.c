@@ -23,6 +23,8 @@
    - 5: Add top 2 items on the stack
    - 6: Load <string>
    - 7: Print the top item (which is expected to be a string)
+   - 8: Cons <size> will create a new heap object and will load
+        the last <size> elements on the stack
 
  */
 
@@ -36,11 +38,13 @@ int interpret(uint8_t* program) {
     &&pop,
     &&add,
     &&load_str_lit,
-    &&print_str
+    &&print_str,
+    &&cons
   };
 
   uint16_t heap_info = 0;
-  uint16_t length = 0;
+  uint16_t size_in_bytes = 0;
+  uint16_t logical_size = 0;
   HeapObject* gen0[GEN0_SIZE];
   HeapObject* gen1[GEN1_SIZE];
   StackObject stack[STACK_SIZE] = { {0} };
@@ -71,7 +75,7 @@ int interpret(uint8_t* program) {
   #endif
 
   ++vm.ip;
-  stack[++vm.sp].integer = (long)(vm.program[vm.ip]);
+  vm.stack[++vm.sp].integer = (long)(vm.program[vm.ip]);
   vm.ip += 8;
   goto *instructions[vm.program[vm.ip]];
 
@@ -82,18 +86,18 @@ int interpret(uint8_t* program) {
 
   ++vm.ip;
   heap_info = vm.program[vm.ip++];
-  length = getHeapInfoSizeInBytes(heap_info);
-  vm.temp_ptr0 = malloc(sizeof(uint8_t) + sizeof(uint8_t) + length); // size + is_marked + data
+  size_in_bytes = getHeapInfoSizeInBytes(heap_info);
+  vm.temp_ptr0 = malloc(sizeof(uint16_t) + size_in_bytes); // info + data
   vm.temp_ptr0->info = heap_info;
-  memcpy(vm.temp_ptr0->data, &(vm.program[++vm.ip]), length);
-  stack[++vm.sp].pointer = vm.temp_ptr0;
+  memcpy(vm.temp_ptr0->data, &(vm.program[++vm.ip]), size_in_bytes);
+  vm.stack[++vm.sp].pointer = vm.temp_ptr0;
 
   if (vm.gen0p >= GEN0_SIZE) {
     gen0_gc(&vm);
   }
   gen0[vm.gen0p++] = vm.temp_ptr0;
 
-  vm.ip += length;
+  vm.ip += size_in_bytes;
   goto *instructions[vm.program[vm.ip]];
 
  print:
@@ -143,6 +147,31 @@ int interpret(uint8_t* program) {
   goto *instructions[vm.program[++vm.ip]];
 
 
+  // 8: Cons <size> will create a new heap object and will load
+  //    the last <size> elements on the stack
+ cons:
+  #if DEBUG
+  DEBUG_PRINT("cons");
+  #endif
+
+  ++vm.ip;
+  heap_info = vm.program[vm.ip++];
+  ++vm.ip;
+  size_in_bytes = getHeapInfoSizeInBytes(heap_info);
+  vm.temp_ptr0 = malloc(sizeof(uint16_t) + size_in_bytes); // info + data
+  vm.temp_ptr0->info = heap_info;
+  logical_size = getHeapInfoLogicalSize(heap_info);
+  memcpy(vm.temp_ptr0->data, &(vm.stack[vm.sp - logical_size + 1]), size_in_bytes);
+  vm.stack[++vm.sp].pointer = vm.temp_ptr0;
+
+  if (vm.gen0p >= GEN0_SIZE) {
+    gen0_gc(&vm);
+  }
+  gen0[vm.gen0p++] = vm.temp_ptr0;
+
+  goto *instructions[vm.program[vm.ip]];
+
+  // we don't expect to reach here. We expect HALT to be the last instruction
   return 1;
 }
 

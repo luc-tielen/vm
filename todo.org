@@ -69,7 +69,7 @@ and we distinguish between the two using the least significant bit:
 *** DONE GC pointer chasing
 *** DONE Replace unsigned char with uint8_t
 *** TODO Pairs/Lists - we need this to test the pointer chasing in the GC
-- ListNil will be represented as the number 1
+- ListNil will be represented as the int literal 0
 - ListCons will be represented as a two stack objects:
   1. the first is the value
   2. the second is the rest of the list

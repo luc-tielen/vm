@@ -125,11 +125,22 @@ main = hspec $ do
       result <- readProcess "_build/vm" ["a.bin"] ""
       result `shouldBe` "b\n"
 
+    it "simple list" $ do
+      let
+        code = [Lit 2, Lit 1, Nil, Cons 2, Cons 2, Halt] -- (1 : 2 : Nil)
+
+      writeTestToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` ""
+
+
 type Program' = [Stmt]
 
 data Stmt
   = Lit Int64
   | LitStr BSC.ByteString
+  | Cons Int
+  | Nil
   | Add
   | Swap
   | Pop
@@ -144,13 +155,23 @@ print_ = putWord8 2
 swap_  = putWord8 3
 pop_   = putWord8 4
 add_   = putWord8 5
-lit_ n = putInt64le (shiftL n 1 + 1)
+lit_ n = putInt64le (markIntLit (shiftL n 1))
 str_ :: BS.ByteString -> Put
 str_ str = do
   putWord8 6
-  putWord16le (fromIntegral (setBit (shiftL (BSC.length str) 2) 1))
+  putWord16le (fromIntegral (markByteArray (shiftL (BSC.length str) 2)))
   mapM_ (putInt8 . fromIntegral) (BS.unpack str)
 printStr_ = putWord8 7
+cons_ :: Int -> Put
+cons_ size = do
+  putWord8 8
+  putWord16le (fromIntegral (shiftL size 2))
+
+markByteArray :: Int -> Int
+markByteArray num = setBit num 1
+
+markIntLit :: Int64 -> Int64
+markIntLit = (+1)
 
 compileStmt :: Stmt -> Put
 compileStmt = \case
@@ -161,6 +182,12 @@ compileStmt = \case
   Pop -> pop_
   Print -> print_
   PrintStr -> printStr_
+  Cons size ->
+    sequence_
+      ( cons_ size
+      : take (size*2) (cycle [swap_, pop_])
+      )
+  Nil -> compileStmt (Lit 0)
   Halt -> halt_
 
 compile :: Program' -> Put
