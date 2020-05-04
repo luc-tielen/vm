@@ -78,15 +78,16 @@ and we distinguish between the two using the least significant bit:
   the last <size> elements on the stack
 - New opcode: Index <index> will put the <index> element in the
   heap object on the stack
-*** TODO Arrays?
-We could also just add regular arrays as that seems pretty straightforward.
-Just an array of StackObjects.
+*** TODO Add tests for Cons and Indexing
+We can represent lists, arrays and complex objects. Let's write some tests.
 *** TODO Add tests for pointer chasing in GC
-*** TODO More Strings
+*** TODO Writes some comments and documentation
+Go over the code, find non-obvious things, move things around, write comments.
+*** TODO Add Jumps and Conditional Jumps
+*** TODO Add Functions and Closures
+*** TODO Add QuickCheck Tests
+*** TODO Standard library functions
 - int-to-str, concat, change print to only print strings
-*** Add bytearrays
-*** Add Jumps and Conditional Jumps
-*** Add Functions and Closures
 ** References
 - [[http://caml.inria.fr/pub/papers/xleroy-zinc.pdf][Zinc]]
 - [[http://git.annexia.org/?p=jonesforth.git;a=blob;f=jonesforth.S;h=45e6e854a5d2a4c3f26af264dfce56379d401425;hb=HEAD][JonesForth]]
