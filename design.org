@@ -1,0 +1,11 @@
+* BIP
+** Overview
+*** Model
+*** Value representation
+**** Stack
+**** Heap
+*** Opcodes
+*** Garbage collection
+*** Function calls and closures
+TODO
+** Code structure and techniques
