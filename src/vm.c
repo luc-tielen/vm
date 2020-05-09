@@ -13,7 +13,7 @@
   fprint_stack(stderr, vm.sp + 1, vm.stack);
 
 
-/* bytecodes:
+/* opcodes:
 
    - 0: Halt
    - 1: Load <int>

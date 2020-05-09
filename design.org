@@ -1,11 +1,146 @@
 * BIP
 ** Overview
+BIP (Bytecode Interpreter Project) is a virtual machine written in C
+for statically typed functional languages.
 *** Model
+BIP is a stack machine. Which means it uses a stack data structure
+to store all reachable data, and all operations manipulate,
+and use data from the stack.
+
+For example, an Add operation reaches for the top two items on the stack
+and then pushes another item on the stack which is the sum of the two items.
+
+In general, code written for stack machines use reverse polish notation (RPN).
+Which first presents the data, and then the operation.
+For example, ~print (1 + 2)~ will look like ~1 2 + print~ in RPN.
+
+We expect operations to be "type safe" - when calling the ~add~ operation,
+we expect there to be two integers on the top of the stack.
+This can significantly simplify our code and make it faster.
+
+A compiler for a statically typed language can guarantee these conditions.
+
+Currently, data in BIP is immutable. This simplifies a lot of the operations
+we need to do as well.
+
+BIP uses the 'Indirect Threaded Code' technique as the program driver
+instead of a more common while+switch technique. ITC is supposed to be faster,
+because it helps the branch predictor figure out hot paths for instructions.
+
+This technique in not available in standard C, but fortunately both gcc and clang
+allow us to use it.
 *** Value representation
 **** Stack
+The stack is implemented as an array and a 'stack pointer' (index).
+Each stack object is 64-bit long and can represent either a
+63-bit integer or a pointer to a heap object.
+
+We use a union construct for the two, and we use the least significant
+bit (LSB) to differentiate the two:
+
+- If the LSB is set, the stack object represents an unboxed 63-bit integer
+  (that should be shifted to the right to get it's actual value).
+- If the LSB is not set, the stack object represents a pointer to a heap object.
+
+We use this tagging trick for the garbage collector. It needs
+to be able to track allocations and free the relevant heap objects
+when they're no longer reachable.
+
+The actual program is expected to use the appropriate operations
+on the right objects and therefore we will not check whether a stack object
+is an integer or a pointer during program execution.
+
+Later, we will use the integer representation for other unboxed values,
+such as booleans.
 **** Heap
+The heap contains all other kinds of objects. We differentiate between
+two kinds of objects: boxed compound objects and byte arrays.
+
+The heap object has two parts, the info of the heap object and the actual data.
+
+The info uses 2 bytes to represent the following:
+
+1. The first 14 bits represents the size of the object -
+   for byte arrays this is in bytes, for boxed compound objects this is
+   in 64-bit words.
+2. when the 15 bit is set, the heap object represents a byte array,
+   otherwise it is an array of stack objects.
+3. the LSB is used by the garbage collector to mark live data.
+
+Then the actual data is either an array of bytes or an array of stack objects.
 *** Opcodes
+Opcodes in BIP use 1 byte. Some opcodes will have data after them, some will not.
+
+Example opcodes:
+
+- Print (2): will print the top item on the stack
+- Load: (1) <integer>: is 9 bytes long. The first byte is the opcode,
+                       and the next 8 are the number.
+
 *** Garbage collection
+**** Overview
+The garbage collector's responsibility is to track all heap objects
+and free unreachable objects from time to time.
+
+Note that the fact that all of our data is immutable greatly
+simplifies some of the operations we need to do, and might
+allow us to implement some other cool tricks like concurrent garbage
+collection more easily.
+
+We implement the garbage collection by maintaining two arrays, gen0 and gen1, each
+is an array of heap object pointers + an index for the next empty slot.
+
+When we allocate a new heap object (using malloc),
+we add a pointer to it to the gen0 array.
+If we no longer have space to add new objects to the gen0 array,
+we stop the program execution and start the garbage collection process.
+This process is composed of two phases: Mark and Copy/Sweep.
+**** Mark
+We traverse the stack array until we reach the stack pointer
+and for each item in the array we check if it's a heap object pointer or an integer.
+
+- For integers, we don't do anything.
+- For heap object pointers, we look at the info data of the object,
+  if it's marked, we skip it. if it's not marked, we mark it and
+  in the case that it's not a byte array we traverse the array the same way
+  we do for the stack, skipping integers and checking heap objects.
+
+Since our machine can only operate on data that is reachable from the stack in some
+way, this process will always reach all the objects we could potentially
+use in our program.
+**** Copy/Sweep
+After marking all reachable objects, we can now traverse the gen0 array
+which contains all of the recently allocated objects (reachable and unreachable).
+
+For each object, if it's marked, we copy it (the pointer) to the gen1 array
+and unset the 'is_marked' bit.
+If it isn't, we deallocate it.
+
+If the gen1 array becomes full, we use the same algorithm on the gen1 array,
+only that we allocate a new temporary array to which we will copy all
+the reachable objects. At the end of the process we will copy these back
+to the original gen1 array (yeah, we will optimize this at some point).
+
+After cleaning up the gen0 array, we set the gen0 index back to 0.
+And we are now ready to add new heap objects, and we give the control back to the
+executing program.
+**** Why two arrays?
+We separate gen0 (often called the nursery) and gen1 for a few reasons:
+
+1. "The generational hypothesis" says that most objects are short lived,
+   so when we clean data we could probably get away with only looking at the
+   most recently allocated objects and not everything the program ever allocated.
+   we expect longer lived objects to still be alive.
+   So collecting only gen0 will probably be faster.
+2. gen0 getting full is probably a decent indication to when we should
+   start garbage collecting.
 *** Function calls and closures
 TODO
-** Code structure and techniques
+** Code structure
+Currently we only have a few files in our project:
+
+- ~types.h~ - where we define the types such as the stack object and heap object
+  to be used by the rest of the program, the size of gen0 and gen1, and the vm structure.
+- ~vm.c~ - the program driver which interprets the opcodes and manipulates the data.
+- ~gc.c~ - the garbage collector operations.
+- ~utils.c~ - useful utility functions.
