@@ -134,7 +134,6 @@ void mark_pointer(HeapObject* obj) {
   for (uint16_t i = 0; i < size; ++i) {
     data = *(StackObject*)(&(obj->data[i*sizeof(StackObject)]));
     if (data.integer & IS_INTEGER_TAG) {
-      return;
     } else {
       mark_pointer(data.pointer);
     }
