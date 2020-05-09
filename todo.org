@@ -68,8 +68,8 @@ I don't exactly know what I'm doing, but I have a rough idea. So please be patie
  - 1 means integer, which we will shift right once to get the real number
  - 0 means pointer, which we will use as-is
 **** DONE GC pointer chasing
-*** Current
 **** DONE Replace unsigned char with uint8_t
+*** Current
 **** DONE Pairs/Lists - we need this to test the pointer chasing in the GC
  - ListNil will be represented as the int literal 0
  - ListCons will be represented as a two stack objects:
@@ -80,13 +80,13 @@ I don't exactly know what I'm doing, but I have a rough idea. So please be patie
    the last <size> elements on the stack
  - New opcode: Index <index> will put the <index> element in the
    heap object on the stack
-**** NOW General design doc
-**** TODO Add tests for Cons and Indexing
+**** DONE General design doc
+**** NOW Add tests for Cons and Indexing
  We can represent lists, arrays and complex objects. Let's write some tests.
 **** TODO Add tests for pointer chasing in GC
-*** Next
 **** TODO Writes some comments and documentation
  Go over the code, find non-obvious things, move things around, write comments.
+*** Next
 **** TODO Add Jumps and Conditional Jumps
 **** TODO Add Functions and Closures
 **** TODO Add QuickCheck Tests
