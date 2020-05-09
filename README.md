@@ -13,6 +13,8 @@ garbage collection, exceptions and concurrency.
 I'll be taking cues from OCaml and Chicken Scheme
 as well as other resources, combined with some experimentation.
 
+- [Check out the design doc](design.org).
+
 ## How to build
 
 #### Prerequisites
