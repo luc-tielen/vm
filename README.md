@@ -1,3 +1,5 @@
+![Build status](https://gitlab.com/gilmi/vm/badges/master/pipeline.svg?job=pipeline)
+
 # Bytecode Interpreter Project
 
 Hi! I'm streaming work on this project on [Twitch](https://twitch.tv/suppipi)!
