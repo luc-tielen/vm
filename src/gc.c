@@ -124,18 +124,19 @@ void mark_pointer(HeapObject* obj) {
     return;
   }
   // set is_marked @TODO - rector
-  obj->info |= 1;
+  obj->info |= IS_MARKED_TAG;
   if (obj->info & IS_BYTEARRAY_TAG) {
     return;
   }
   uint16_t size = getHeapInfoLogicalSize(obj->info);
 
-  StackObject* data;
-  for (unsigned int i = 0; i < size; ++i) {
-    data = &((StackObject*)(obj->data))[i];
-    if (data->integer & IS_INTEGER_TAG) {
+  StackObject data;
+  for (uint16_t i = 0; i < size; ++i) {
+    data = *(StackObject*)(&(obj->data[i*sizeof(StackObject)]));
+    if (data.integer & IS_INTEGER_TAG) {
+      return;
     } else {
-      mark_pointer(data->pointer);
+      mark_pointer(data.pointer);
     }
   }
 }

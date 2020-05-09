@@ -10,7 +10,7 @@ void fprint_stack(FILE* fp, unsigned int size, StackObject* stack) {
 }
 
 void fprint_stackobj(FILE* fp, int verbosity, StackObject stack_obj) {
-  if (stack_obj.integer & 1) {
+  if (stack_obj.integer & IS_INTEGER_TAG) {
     fprintf(fp, "%ld ", (stack_obj.integer >> 1));
   } else {
     if (verbosity) {
@@ -38,6 +38,7 @@ void fprint_heapobj(FILE* fp, HeapObject* heap_obj) {
 
     fprintf(fp, "[ ");
     for (uint16_t i = 0; i < size; ++i) {
+
       fprint_stackobj(fp, 1, *(StackObject*)(&(heap_obj->data[i*sizeof(StackObject)]))); // wow this is hacky
     }
     fprintf(fp, "] ");

@@ -144,3 +144,55 @@ main = hspec $ do
       writeBytesToFile "a.bin" . compile $ code
       result <- readProcess "_build/vm" ["a.bin"] ""
       result `shouldBe` "1\n2\n"
+
+
+    it "An array" $ do
+      let
+        code = concat
+          [ map Lit [0..9]
+          , [ Cons 10
+            , HeapIndex 7, Print
+            , Halt
+            ]
+          ]
+
+      writeBytesToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` "7\n"
+
+
+    it "A 2d array" $ do
+      let
+        size = 10
+        index = 2
+        code = concat
+          [ concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+          , [ Cons (fromIntegral size)
+            , HeapIndex index, HeapIndex 1, Print
+            , Halt
+            ]
+          ]
+
+      writeBytesToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` (show index <> "\n")
+
+    it "A 2d array throwaway" $ do
+      let
+        size = 10
+        index = 2
+        code = concat
+          [ concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+          , [ Cons (fromIntegral size)
+            , Pop
+            ]
+          , concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+          , [ Cons (fromIntegral size)
+            , HeapIndex index, HeapIndex 1, Print
+            , Halt
+            ]
+          ]
+
+      writeBytesToFile "a.bin" . compile $ code
+      result <- readProcess "_build/vm" ["a.bin"] ""
+      result `shouldBe` (show index <> "\n")
