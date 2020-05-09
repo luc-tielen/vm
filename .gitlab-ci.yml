@@ -1,0 +1,27 @@
+# Using https://vadosware.io/post/zero-to-continuous-integrated-testing-a-haskell-project-with-gitlab/
+
+
+variables:
+  STACK_ROOT: "${CI_PROJECT_DIR}/.stack"
+
+cache:
+  paths:
+    - .stack
+    - zig.tar.xz
+
+before_script:
+  - apt-get update
+  - apt-get install make xz-utils
+  - wget -qO- https://get.haskellstack.org/ | sh
+  - stack setup --no-terminal
+  - if [ ! -f zig.tar.xz ]; then wget -qO zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-0.6.0+e79d7e0de.tar.xz; fi
+  - mkdir zig && tar xf zig.tar.xz -C zig --strip-components 1
+
+stages:
+  - test
+
+tests:
+  stage: test
+  script:
+    - PATH="./zig:$PATH"
+    - ./build.hs test
