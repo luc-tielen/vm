@@ -5,6 +5,8 @@
 
 #define DEBUG 0
 
+#define PROGRAM_SIZE 1024*1024
+
 #define GEN0_SIZE 4 // We'll keep it small for testing purposes
 #define GEN1_SIZE 32
 #define STACK_SIZE 1024
@@ -13,6 +15,7 @@
 #define IS_BYTEARRAY_TAG 2
 
 #define IS_INTEGER_TAG 1
+
 
 typedef struct HeapObject {
   uint16_t info;

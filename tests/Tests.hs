@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-15.7 script --package bytestring --package cereal --package hspec --package process
+-- stack --resolver lts-16.3 script --package bytestring --package cereal --package hspec --package process
 
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -15,98 +15,106 @@ main :: IO ()
 main = hspec $ do
   describe "tests" $ do
     it "prints 17" $ do
-      writeBytesToFile "a.bin" . compile $
+      compareResult
         [ Lit 17, Print, Halt ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "17\n"
+        [ "17" ]
 
     it "print (1 + 2)" $ do
-      writeBytesToFile "a.bin" . compile $
+      compareResult
         [ Lit 1, Lit 2, Add, Print, Halt ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "3\n"
+        [ "3" ]
 
     it "print (1 + (2 + (3 + (4 + 5))))" $ do
-      writeBytesToFile "a.bin" . compile $
+      compareResult
         [ Lit 1, Lit 2, Lit 3, Lit 4, Lit 5, Add, Add, Add, Add, Print, Halt ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "15\n"
+        [ "15" ]
 
     it "print (swap 1 2)" $ do
-      writeBytesToFile "a.bin" . compile $
+      compareResult
         [ Lit 1, Lit 2, Swap, Print, Halt ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "1\n"
+        [ "1" ]
 
     it "prints \"hello\"" $ do
-      writeBytesToFile "a.bin" . compile $
+      compareResult
         [ LitStr "hello", PrintStr, Halt ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "hello\n"
+        [ "hello" ]
 
     it "prints \"hello\" \"world\"" $ do
-      writeBytesToFile "a.bin" . compile $
-        [ LitStr "hello", PrintStr, Pop
-        , LitStr "world", PrintStr, Pop
-        , Halt
-        ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "hello\nworld\n"
+      let
+        code =
+          [ LitStr "hello", PrintStr, Pop
+          , LitStr "world", PrintStr, Pop
+          , Halt
+          ]
+        expectedResult =
+          [ "hello"
+          , "world"
+          ]
+      code `compareResult` expectedResult
 
     it "prints a few lines" $ do
-      writeBytesToFile "a.bin" . compile $
-        [ LitStr "hello",  PrintStr
-        , LitStr "world",  PrintStr, Pop
-        , LitStr "how",    PrintStr, Pop
-        , LitStr "are",    PrintStr
-        , LitStr "you",    PrintStr, Pop
-        , LitStr "today?", PrintStr, Pop
-        , Halt
-        ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "hello\nworld\nhow\nare\nyou\ntoday?\n"
+      let
+        code =
+          [ LitStr "hello",  PrintStr
+          , LitStr "world",  PrintStr, Pop
+          , LitStr "how",    PrintStr, Pop
+          , LitStr "are",    PrintStr
+          , LitStr "you",    PrintStr, Pop
+          , LitStr "today?", PrintStr, Pop
+          , Halt
+          ]
+        expectedResult =
+          [ "hello"
+          , "world"
+          , "how"
+          , "are"
+          , "you"
+          , "today?"
+          ]
+      code `compareResult` expectedResult
 
     it "prints a few more lines" $ do
-      writeBytesToFile "a.bin" . compile $
-        [ LitStr "hello",       PrintStr
-        , LitStr "world",       PrintStr, Pop
-        , LitStr "how",         PrintStr, Pop
-        , LitStr "are",         PrintStr
-        , LitStr "you",         PrintStr, Pop
-        , LitStr "today?",      PrintStr, Pop
-        , LitStr "let",         PrintStr
-        , LitStr "me",          PrintStr, Pop
-        , LitStr "tell",        PrintStr, Pop
-        , LitStr "you",         PrintStr
-        , LitStr "something",   PrintStr, Pop
-        , LitStr "interesting", PrintStr, Pop
-        , LitStr "about",       PrintStr, Pop
-        , LitStr "fish?",       PrintStr, Pop
-        , LitStr "i dunno",     PrintStr
-        , LitStr "have ",       PrintStr, Pop
-        , LitStr " fun",        PrintStr, Pop
-        , Halt
-        ]
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` unlines
-        [ "hello"
-        , "world"
-        , "how"
-        , "are"
-        , "you"
-        , "today?"
-        , "let"
-        , "me"
-        , "tell"
-        , "you"
-        , "something"
-        , "interesting"
-        , "about"
-        , "fish?"
-        , "i dunno"
-        , "have "
-        , " fun"
-        ]
+      let
+        code =
+          [ LitStr "hello",       PrintStr
+          , LitStr "world",       PrintStr, Pop
+          , LitStr "how",         PrintStr, Pop
+          , LitStr "are",         PrintStr
+          , LitStr "you",         PrintStr, Pop
+          , LitStr "today?",      PrintStr, Pop
+          , LitStr "let",         PrintStr
+          , LitStr "me",          PrintStr, Pop
+          , LitStr "tell",        PrintStr, Pop
+          , LitStr "you",         PrintStr
+          , LitStr "something",   PrintStr, Pop
+          , LitStr "interesting", PrintStr, Pop
+          , LitStr "about",       PrintStr, Pop
+          , LitStr "fish?",       PrintStr, Pop
+          , LitStr "i dunno",     PrintStr
+          , LitStr "have ",       PrintStr, Pop
+          , LitStr " fun",        PrintStr, Pop
+          , Halt
+          ]
+        expectedResult =
+          [ "hello"
+          , "world"
+          , "how"
+          , "are"
+          , "you"
+          , "today?"
+          , "let"
+          , "me"
+          , "tell"
+          , "you"
+          , "something"
+          , "interesting"
+          , "about"
+          , "fish?"
+          , "i dunno"
+          , "have "
+          , " fun"
+          ]
+      code `compareResult` expectedResult
 
   -- We want to test the gen1 gc
   -- It currently has the size of 32
@@ -119,9 +127,7 @@ main = hspec $ do
           [ Swap, Pop, Swap, Pop, Swap, Pop ]
         code = take 120 (cycle strings) <> [PrintStr, Halt]
 
-      writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "b\n"
+      code `compareResult` ["b"]
 
     it "simple list" $ do
       let
@@ -129,7 +135,7 @@ main = hspec $ do
 
       writeBytesToFile "a.bin" . compile $ code
       result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "1\n"
+      code `compareResult` ["1"]
 
 
     it "simple list 2" $ do
@@ -141,9 +147,7 @@ main = hspec $ do
           , Halt
           ]
 
-      writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "1\n2\n"
+      code `compareResult` ["1", "2"]
 
 
     it "An array" $ do
@@ -156,9 +160,7 @@ main = hspec $ do
             ]
           ]
 
-      writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` "7\n"
+      code `compareResult` ["7"]
 
 
     it "A 2d array" $ do
@@ -173,9 +175,7 @@ main = hspec $ do
             ]
           ]
 
-      writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` (show index <> "\n")
+      code `compareResult` [show index]
 
     it "A 2d array throwaway" $ do
       let
@@ -193,6 +193,28 @@ main = hspec $ do
             ]
           ]
 
-      writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
-      result `shouldBe` (show index <> "\n")
+      code `compareResult` [show index]
+
+    it "A 2d array throwaway" $ do
+      let
+        size = 10
+        index = 2
+        code = concat
+          [ concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+          , [ Cons (fromIntegral size)
+            , Pop
+            ]
+          , concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+          , [ Cons (fromIntegral size)
+            , HeapIndex index, HeapIndex 1, Print
+            , Halt
+            ]
+          ]
+
+      code `compareResult` [show index]
+
+compareResult :: Program -> [String] -> IO ()
+compareResult code shouldbe = do
+  writeBytesToFile "a.bin" . compile $ code
+  result <- readProcess "_build/vm" ["a.bin"] ""
+  result `shouldBe` (unlines shouldbe)

@@ -15,7 +15,7 @@ import qualified Data.ByteString.Char8 as BSC
 -----------
 
 
-type Program' = [Stmt]
+type Program = [Stmt]
 
 data Stmt
   = Lit Int64
@@ -35,7 +35,7 @@ data Stmt
 -- Compile --
 -------------
 
-compile :: Program' -> Put
+compile :: Program -> Put
 compile = mapM_ compileStmt
 
 writeBytesToFile :: FilePath -> Put -> IO ()

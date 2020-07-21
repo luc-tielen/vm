@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <stdint.h>
 #include "vm.h"
 
 /*
@@ -14,7 +15,7 @@ int main(int argc, char* argv[]) {
 
 int main(void) {
   FILE *fp = fopen("a.bin", "r");
-  unsigned char program[1023];
+  uint8_t program[PROGRAM_SIZE];
   fread(program, sizeof(program), 1, fp);
   fclose(fp);
 
