@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define DEBUG 0
+#define USE_ASSERTS 1
 
 #define PROGRAM_SIZE 1024*1024
 

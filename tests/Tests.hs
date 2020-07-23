@@ -195,23 +195,35 @@ main = hspec $ do
 
       code `compareResult` [show index]
 
-    it "A 2d array throwaway" $ do
+    it "A string array throwaway" $ do
       let
-        size = 10
-        index = 2
-        code = concat
-          [ concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
+        size = 5
+        index = 0
+        allocArrayCode = concat
+          [ concatMap
+            (\_ ->
+               [LitStr "hello", LitStr "world", LitStr "aaaaaaaaa", LitStr "bye", LitStr "now", Cons 5]
+            )
+            [0..(size - 1)]
           , [ Cons (fromIntegral size)
-            , Pop
             ]
-          , concatMap (\n -> [Lit n, Lit n, Lit n, Cons 3]) [0..(size - 1)]
-          , [ Cons (fromIntegral size)
-            , HeapIndex index, HeapIndex 1, Print
+          ]
+        code = concat
+          [ allocArrayCode
+          , [ HeapIndex index, HeapIndex 1
+            , Swap, Pop, Swap, Pop
+            ]
+          , allocArrayCode
+          , [ Swap
+            , PrintStr
             , Halt
             ]
           ]
 
-      code `compareResult` [show index]
+      code `compareResult` ["world"]
+
+
+
 
 compareResult :: Program -> [String] -> IO ()
 compareResult code shouldbe = do

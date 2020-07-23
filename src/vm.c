@@ -12,6 +12,17 @@
   fprintf(stderr, "(%u) %s | sp: %d | program[ip]: %d | stack: ", vm.ip, (op), vm.sp, vm.program[vm.ip]); \
   fprint_stack(stderr, vm.sp + 1, vm.stack);
 
+#define ASSERT(name, test, excode)              \
+  if (!(test)) {                                \
+    fprintf(stderr, "Failed test: %s", name);   \
+    exit(excode);                               \
+  }
+
+#define ASSERT_STACK_SIZE(expected_items, name, vm)                 \
+  if (vm.sp + 1 - expected_items < 0) {                             \
+    fprintf(stderr, "Stack underflow in: (%d) %s", vm.ip, name);    \
+    exit(111);                                                      \
+  }
 
 /* opcodes:
 
@@ -108,12 +119,20 @@ int interpret(uint8_t* program) {
   DEBUG_PRINT("print");
   #endif
 
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(1, "print", vm);
+  #endif
+
   printf("%ld\n", (vm.stack[vm.sp].integer >> 1)); // to remove the least significant bit
   goto *instructions[vm.program[++vm.ip]];
 
  print_str:
   #if DEBUG
   DEBUG_PRINT("print_str");
+  #endif
+
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(1, "print_str", vm);
   #endif
 
   vm.temp_ptr0 = vm.stack[vm.sp].pointer;
@@ -126,6 +145,10 @@ int interpret(uint8_t* program) {
   DEBUG_PRINT("swap");
   #endif
 
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(2, "swap", vm);
+  #endif
+
   vm.temp0 = vm.stack[vm.sp].integer;
   vm.stack[vm.sp] = vm.stack[vm.sp - 1];
   vm.stack[vm.sp - 1].integer = vm.temp0;
@@ -136,6 +159,10 @@ int interpret(uint8_t* program) {
   DEBUG_PRINT("pop");
   #endif
 
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(1, "pop", vm);
+  #endif
+
   vm.stack[vm.sp].pointer = 0;
   --vm.sp;
   goto *instructions[vm.program[++vm.ip]];
@@ -143,6 +170,10 @@ int interpret(uint8_t* program) {
  add:
   #if DEBUG
   DEBUG_PRINT("add");
+  #endif
+
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(2, "add", vm);
   #endif
 
   ++vm.sp;
@@ -160,10 +191,16 @@ int interpret(uint8_t* program) {
   ++vm.ip;
   heap_info = vm.program[vm.ip++];
   ++vm.ip;
+
   size_in_bytes = getHeapInfoSizeInBytes(heap_info);
+  logical_size = getHeapInfoLogicalSize(heap_info);
+
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(logical_size, "cons", vm);
+  #endif
+
   vm.temp_ptr0 = malloc(sizeof(uint16_t) + size_in_bytes); // info + data
   vm.temp_ptr0->info = heap_info;
-  logical_size = getHeapInfoLogicalSize(heap_info);
   memcpy(vm.temp_ptr0->data, &(vm.stack[vm.sp - logical_size + 1]), size_in_bytes);
   vm.stack[++vm.sp].pointer = vm.temp_ptr0;
 
@@ -180,6 +217,10 @@ int interpret(uint8_t* program) {
  heap_index:
   #if DEBUG
   DEBUG_PRINT("heap_index");
+  #endif
+
+  #if USE_ASSERTS
+  ASSERT_STACK_SIZE(1, "heap_index", vm);
   #endif
 
   ++vm.ip;
