@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-15.7 script
+-- stack --resolver lts-16.26 script
 
 
 -- initial version taken from https://shakebuild.com/manual

@@ -14,7 +14,7 @@ before_script:
   - apt-get install make xz-utils
   - wget -qO- https://get.haskellstack.org/ | sh
   - stack setup --no-terminal
-  - if [ ! -f zig.tar.xz ]; then wget -qO zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-0.6.0+e79d7e0de.tar.xz; fi
+  - if [ ! -f zig.tar.xz ]; then wget -qO zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-0.7.1+43dbe8622.tar.xz; fi
   - mkdir zig && tar xf zig.tar.xz -C zig --strip-components 1
 
 stages:

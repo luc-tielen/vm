@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-16.3 script --package bytestring --package cereal --package hspec --package process
+-- stack --resolver lts-16.26 script --package bytestring --package cereal --package hspec --package process
 
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}

@@ -16,7 +16,7 @@ void fprint_stackobj(FILE* fp, int verbosity, StackObject stack_obj) {
     if (verbosity) {
       fprint_heapobj(fp, stack_obj.pointer);
     } else {
-      fprintf(fp, "%x ", (unsigned int)(stack_obj.pointer));
+      fprintf(fp, "%lu ", (unsigned long)(stack_obj.pointer));
     }
   }
 }
