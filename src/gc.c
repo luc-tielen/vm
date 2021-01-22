@@ -32,9 +32,8 @@ void gen0_gc(struct VM* vm) {
 
   // sweep / copy
   for (int i = 0; i < GEN0_SIZE; ++i) {
-    if (vm->gen0[i]->info & IS_MARKED_TAG) {
-      // clear is_marked - @TODO refactor
-      vm->gen0[i]->info = ((vm->gen0[i]->info >> 1) << 1);
+    if (is_gc_marked(vm->gen0[i])) {
+      clear_gc_marked(vm->gen0[i]);
 
       if (vm->gen1p >= GEN1_SIZE) {
         gen1_gc(vm);
@@ -70,7 +69,7 @@ void gen0_gc(struct VM* vm) {
 void gen1_gc(struct VM* vm) {
   for (int i = 0; i < GEN1_SIZE; ++i) {
     // clear is_marked - @TODO refactor
-    vm->gen1[i]->info = ((vm->gen1[i]->info >> 1) << 1);
+    clear_gc_marked(vm->gen1[i]);
   }
   mark(vm);
 
@@ -88,7 +87,7 @@ void gen1_gc(struct VM* vm) {
 
   // copy / sweep
   for (int i = 0; i < GEN1_SIZE; ++i) {
-    if (vm->gen1[i]->info & IS_MARKED_TAG) {
+    if (is_gc_marked(vm->gen1[i])) {
         gen1_temp[gen1p_temp++] = vm->gen1[i];
     } else {
       free(vm->gen1[i]);
@@ -120,12 +119,11 @@ void gen1_gc(struct VM* vm) {
 // Recursively mark live heap objects
 // We could probably find a faster way to do this but this is enough for now
 void mark_pointer(HeapObject* obj) {
-  if (obj->info & IS_MARKED_TAG) {
+  if (is_gc_marked(obj)) {
     return;
   }
-  // set is_marked @TODO - rector
-  obj->info |= IS_MARKED_TAG;
-  if (obj->info & IS_BYTEARRAY_TAG) {
+  set_gc_marked(obj);
+  if (is_bytearray(obj)) {
     return;
   }
   uint16_t size = getHeapInfoLogicalSize(obj->info);
@@ -133,7 +131,7 @@ void mark_pointer(HeapObject* obj) {
   StackObject data;
   for (uint16_t i = 0; i < size; ++i) {
     data = *(StackObject*)(&(obj->data[i*sizeof(StackObject)]));
-    if (data.integer & IS_INTEGER_TAG) {
+    if (is_integer(data)) {
     } else {
       mark_pointer(data.pointer);
     }
@@ -143,7 +141,7 @@ void mark_pointer(HeapObject* obj) {
 void mark(struct VM* vm) {
   // mark
   for (int i = 0; i < vm->sp; ++i) {
-    if (vm->stack[i].integer & IS_INTEGER_TAG) {
+    if (is_integer(vm->stack[i])) {
       continue;
     } else {
       // When we'll have heap object that can pointer to other objects, we'll chase these pointers.

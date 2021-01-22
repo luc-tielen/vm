@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define DEBUG 0
 #define USE_ASSERTS 1
@@ -12,10 +13,15 @@
 #define GEN1_SIZE 32
 #define STACK_SIZE 1024
 
-#define IS_MARKED_TAG 1
-#define IS_BYTEARRAY_TAG 2
+// For heap objects
+#define GC_MARKED_TAG 0b1
+#define HEAPARRAY_TAG 0b000
+#define BYTEARRAY_TAG 0b001
+#define CLOSURE_TAG 0b010
 
-#define IS_INTEGER_TAG 1
+// For stack objects
+#define INTEGER_TAG 0b1
+#define POINTER_TAG 0b0
 
 
 typedef struct HeapObject {
@@ -45,5 +51,22 @@ struct VM {
 
   struct HeapObject* temp_ptr0;
 };
+
+bool is_integer(StackObject obj);
+bool is_pointer(StackObject obj);
+
+uint8_t get_heap_object_tag(HeapObject* obj);
+uint8_t get_stack_object_tag(StackObject* obj);
+
+bool is_heap_array(HeapObject* obj);
+bool is_bytearray(HeapObject* obj);
+bool is_closure(HeapObject* obj);
+
+uint8_t get_closure_argsize(HeapObject* obj);
+uint8_t get_closure_appliednum(HeapObject* obj);
+
+bool is_gc_marked(HeapObject* obj);
+void clear_gc_marked(HeapObject* obj);
+void set_gc_marked(HeapObject* obj);
 
 #endif

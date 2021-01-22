@@ -10,7 +10,7 @@ void fprint_stack(FILE* fp, unsigned int size, StackObject* stack) {
 }
 
 void fprint_stackobj(FILE* fp, int verbosity, StackObject stack_obj) {
-  if (stack_obj.integer & IS_INTEGER_TAG) {
+  if (is_integer(stack_obj)) {
     fprintf(fp, "%ld ", (stack_obj.integer >> 1));
   } else {
     if (verbosity) {
@@ -31,7 +31,7 @@ void fprint_heap(FILE* fp, unsigned int size, HeapObject** heap) {
 }
 
 void fprint_heapobj(FILE* fp, HeapObject* heap_obj) {
-  if (heap_obj->info & IS_BYTEARRAY_TAG) {
+  if (is_bytearray(heap_obj)) {
     fprintf(fp, "[%.*s] ", getHeapObjectSize(heap_obj), ((char*)(heap_obj->data)));
   } else {
     uint16_t size = getHeapInfoLogicalSize(heap_obj->info);
@@ -51,7 +51,7 @@ uint16_t getHeapObjectSize(HeapObject* ptr) {
 }
 
 uint16_t getHeapInfoSizeInBytes(uint16_t info) {
-  if (info & IS_BYTEARRAY_TAG) {
+  if ((info >> 1) & BYTEARRAY_TAG) {
     return (info >> 2);
   } else {
     return (info >> 2) * sizeof(StackObject);
@@ -59,7 +59,7 @@ uint16_t getHeapInfoSizeInBytes(uint16_t info) {
 }
 
 uint16_t getHeapInfoLogicalSize(uint16_t info) {
-  if (info & IS_BYTEARRAY_TAG) {
+  if ((info >> 1) & BYTEARRAY_TAG) {
     return (info >> 2);
   } else {
     return (info >> 2);

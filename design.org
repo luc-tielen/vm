@@ -56,18 +56,27 @@ such as booleans.
 The heap contains all other kinds of objects. We differentiate between
 two kinds of objects: boxed compound objects and byte arrays.
 
-The heap object has two parts, the info of the heap object and the actual data.
+The heap object has two parts, the ~info~ of the heap object and the actual ~data~.
 
-The info uses 2 bytes to represent the following:
+The info uses ~2 bytes~ to represent the following:
 
-1. The first 14 bits represents the size of the object -
-   for byte arrays this is in bytes, for boxed compound objects this is
-   in 64-bit words.
-2. when the 15 bit is set, the heap object represents a byte array,
-   otherwise it is an array of stack objects.
-3. the LSB is used by the garbage collector to mark live data.
+1. The LSB is used by the garbage collector to mark live data.
+2. The next 3 bits represent the type of the object:
+   - 000 - an array of 64-bit stack objects. Then the next 12 bits represent the array size.
+   - 001 - a bytearray. Then the next 12 bits represent the numbers of bytes in the array.
+   - 010 - A closure. Then the next 6 bits represent the current number of applied arguments,
+           and the next 6 bits represent the total number of arguments.
 
-Then the actual data is either an array of bytes or an array of stack objects.
+| type                  | 12 bits                   | 3 bits | 1 bit |
+|-----------------------+---------------------------+--------+-------|
+| array of heap objects | array size (64-bit words) |    000 | GC    |
+| bytearray             | array size (bytes)        |    001 | GC    |
+
+| type    | 6 bits               | 6 bits                 | 3 bits | 1 bit |
+|---------+----------------------+------------------------+--------+-------|
+| closure | total number of args | current number of args |    010 | GC    |
+
+Then the actual data is represented after that accordingly.
 *** Opcodes
 Opcodes in BIP use 1 byte. Some opcodes will have data after them, some will not.
 
@@ -135,7 +144,39 @@ We separate gen0 (often called the nursery) and gen1 for a few reasons:
 2. gen0 getting full is probably a decent indication to when we should
    start garbage collecting.
 *** Function calls and closures
-TODO
+We add another stack to our virtual machine. A call stack. The call stack will store locations we need to continue from after executing a function.
+
+We add a few new instructions: ~CALL~, ~JMP~, ~RET~, ~APPLY~, ~CLOS~ and ~UNWRAP~.
+
+- ~CALL~ - Adds the current IP (+1) to the call stack and changes the IP to <pos>
+- ~JMP~ - Changes the ip to <pos> without changing the call stack
+- ~RET~ - Pops the call stack and sets the IP that popped up as the new IP
+- ~CLOS <num>~ - Takes an address (top of the stack) and creates a closure expecting <num> arguments
+- ~APPLY~ - Add an argument to the closure on the top of the stack
+- ~UNWRAP~ - Load off the arguments and the IP of a closure onto the stack
+
+Some rules:
+
+- The first item on the call stack should be and IP of a ~HALT~ instruction.
+- The function should be responsible for cleaning the stack of its arguments.
+- ~CLOS~ should also clean the stack of its closed arguments.
+- In order to use tail call optimizations, compilers should identify tail positions and use JMP instead of CALL.
+
+**** Closures
+A heap object
+
+***** heap info:
+
+| 6 bits               | 6 bits                 | 3 bits      | 1 bit |
+|----------------------+------------------------+-------------+-------|
+| total number of args | current number of args | (tag)   010 | GC    |
+
+***** data:
+
+| 8 bytes | N bytes |
+|---------+---------|
+| <IP>    | <args>  |
+
 ** Code structure
 Currently we only have a few files in our project:
 

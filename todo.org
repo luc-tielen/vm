@@ -81,14 +81,17 @@ I don't exactly know what I'm doing, but I have a rough idea. So please be patie
  - New opcode: Index <index> will put the <index> element in the
    heap object on the stack
 **** DONE General design doc
-**** NOW Add tests for Cons and Indexing
+**** NOW Add Functions and Closures
+- [ ] We need to change the way we represent heap object and add an additional type: closure.
+- [ ] We need to add a few new instructions, ~CALL~, ~JMP~, ~RET~, ~CLOS~, ~APPLY~, ~UNWRAP~.
+- [ ] We need to add functions and an entry point, a program is a list of functions instead.
+*** Next
+**** TODO Add tests for Cons and Indexing
  We can represent lists, arrays and complex objects. Let's write some tests.
 **** TODO Add tests for pointer chasing in GC
+**** TODO Add Jumps and Conditional Jumps
 **** TODO Writes some comments and documentation
  Go over the code, find non-obvious things, move things around, write comments.
-*** Next
-**** TODO Add Jumps and Conditional Jumps
-**** TODO Add Functions and Closures
 **** TODO Add QuickCheck Tests
 **** TODO Standard library functions
  - int-to-str, concat, change print to only print strings
