@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-16.26 script --package shake --package bytestring --package cereal --package hspec --package process
+-- stack --resolver lts-17.0 script --package shake --package bytestring --package cereal --package hspec --package process
 
 
 -- initial version taken from https://shakebuild.com/manual
