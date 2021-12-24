@@ -2,6 +2,10 @@
 
 # Bytecode Interpreter Project
 
+This is a fork of https://gitlab.com/gilmi/vm.
+Main goal is to fully convert the VM from C to Zig.
+All the text below is from the original README. :-)
+
 Hi! I'm streaming work on this project on [Twitch](https://twitch.tv/suppipi)!
 The entire series of videos can be viewed on [Youtube](https://www.youtube.com/watch?v=pKsOAJzfLgE&list=PLhMOOgDOKD4JV2AgL1XzoYanY6RpGKbNa) as well.
 
