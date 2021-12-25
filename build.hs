@@ -35,8 +35,10 @@ main = shakeArgs shakeOptions{shakeFiles="zig-out"} $ do
     cmd_ "valgrind --leak-check=yes" "zig-out/bin/vm-valgrind a.bin"
 
   "zig-out/bin/vm" %> \_ -> do
+    alwaysRerun
     cmd_ "zig build" -- -Drelease-safe=true"
 
   "zig-out/bin/vm-valgrind" %> \out -> do
+    alwaysRerun
     cmd_ "zig build"
     copyFileChanged "zig-out/bin/vm" "zig-out/bin/vm-valgrind"
