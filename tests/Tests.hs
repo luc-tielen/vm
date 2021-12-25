@@ -134,7 +134,7 @@ main = hspec $ do
         code = [Lit 1, Lit 2, Nil, Cons 2, Cons 2, HeapIndex 0, Print, Halt] -- (1 : 2 : Nil)
 
       writeBytesToFile "a.bin" . compile $ code
-      result <- readProcess "_build/vm" ["a.bin"] ""
+      result <- readProcess "zig-out/bin/vm" ["a.bin"] ""
       code `compareResult` ["1"]
 
 
@@ -228,5 +228,5 @@ main = hspec $ do
 compareResult :: Program -> [String] -> IO ()
 compareResult code shouldbe = do
   writeBytesToFile "a.bin" . compile $ code
-  result <- readProcess "_build/vm" ["a.bin"] ""
+  result <- readProcess "zig-out/bin/vm" ["a.bin"] ""
   result `shouldBe` (unlines shouldbe)
