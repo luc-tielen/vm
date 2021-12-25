@@ -11,8 +11,9 @@ pub fn build(b: *std.build.Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    const exe = b.addExecutable("vm", "src/main.c");
+    const exe = b.addExecutable("vm", "src/main.zig");
     exe.addCSourceFiles(&.{ "src/gc.c", "src/types.c", "src/utils.c", "src/vm.c" }, &.{});
+    exe.addIncludeDir("src");
     exe.linkLibC();
     exe.setTarget(target);
     exe.setBuildMode(mode);
